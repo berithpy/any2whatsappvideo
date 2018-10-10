@@ -76,8 +76,11 @@ function reencode(filepath, name) {
     //Here we should write a callback to the renderer
   })
   .on('end', function() {
-    console.log('Finished re-encoding');
-    //Here we should write a callback to the renderer to launch a toaster or something similar
+    console.log('done');
+    win.webContents.send('encoding-succesful', 'yay')
+  })
+  .on('progress', function(progress) {
+    win.webContents.send('encoding-progress', progress.percent)
   })
   .run();
 }
@@ -90,7 +93,7 @@ ipcMain.on('video-dropped', (event, arg) => {
   try {
     reencode(path, name)
   } catch (error) {
-    console.log(error)
+    win.webContents.send('main-error', true)
   }
 })
 

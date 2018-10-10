@@ -3,7 +3,7 @@ const cheers = require('cheers-alert')
 const qs = (selector) => document.querySelector(selector)
 const status = qs('.status')
 const holder = qs('.holder')
-
+let encodingPercentage = 0
 
 const reset = () => {
   if (!Object.keys(adb.tasks).length) {
@@ -21,17 +21,27 @@ const createCard = () => {
 const push = (f) => {
   const card = createCard()
   holder.appendChild(card)
-  let path = f.path.replace(f.name,'')
-
-  card.innerHTML = `<span class='details'>Currently converting:"<span class='file'>${f.path}</span>"</span>`
-
-  // card.setAttribute('data-uid', 123)
+  let path = f.path.replace(f.name, '')
   ipcRenderer.send('video-dropped', `${f.name}@@@${path}`)
+
+  ipcRenderer.on('encoding-progress', (event, percentage) => {
+    encodingPercentage = percentage
+    card.innerHTML = `<span class='details'>Currently converting:"<span class='file'>${f.path}</span>"</span> <progress value='${encodingPercentage}' max='100'>${encodingPercentage} %</progress>`
+  })
   card.addEventListener('click', (event) => {
     event.preventDefault()
-    ipcRenderer.send('folder-to-open',f.path)
-    //here we should open the destination folder and maybe close it when its done
-    
+    ipcRenderer.send('folder-to-open', f.path)
+  })
+
+  ipcRenderer.on('encoding-succesful', (event, succ) => {
+    holder.removeChild(card)
+    cheers.success({
+      title: 'Success!',
+      message: 'Video re-encoded!',
+      alert: 'slideleft',
+      icon: 'fa-user',
+      duration: 3
+    })
   })
 }
 
@@ -47,7 +57,7 @@ holder.ondragleave = holder.ondragend = () => {
 
 holder.ondrop = (e) => {
   e.preventDefault()
-    for (let f of e.dataTransfer.files) {
+  for (let f of e.dataTransfer.files) {
     if (contains(f.type, 'video')) {
       push(f)
       holder.classList.remove('ready', 'over')
@@ -69,7 +79,7 @@ function contains(str, subStr) {
   return str.indexOf(subStr) >= 0
 }
 
-ipcRenderer.on('main-error',(event,error)=>{
+ipcRenderer.on('main-error', (event, error) => {
   cheers.warning({
     title: 'Warning',
     message: 'There was a problem with the main script',
@@ -78,3 +88,5 @@ ipcRenderer.on('main-error',(event,error)=>{
     duration: 3
   })
 })
+
+
