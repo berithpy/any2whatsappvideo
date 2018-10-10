@@ -63,12 +63,13 @@ app.on('activate', () => {
 //ffmpeg -i input.mp4 -c:v libx264 -profile:v baseline -level 3.0 -pix_fmt yuv420p -strict -2 output.mp4
 
 function reencode(filepath, name) {
-  encoder.input(`${filepath}${name}`).outputOptions(
+  encoder.clone().input(`${filepath}${name}`).outputOptions(
     '-c:v', 'libx264',
     '-profile:v', 'baseline',
     '-level', '3.0',
     '-pix_fmt', 'yuv420p',
-    '-strict','-2'
+    '-strict','-2',
+    '-vf','scale=trunc(iw/2)*2:trunc(ih/2)*2'
   )
   .output(`${filepath}fixed_${name}`)
   .on('start', function() {
