@@ -1,0 +1,29 @@
+{
+  "name": "any2whatsappvideo",
+  "version": "1.0.0",
+  "description": "Simple drag and drop video converter",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/berithpy/any2whatsappvideo.git"
+  },
+  "author": "berithpy",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/berithpy/any2whatsappvideo/issues"
+  },
+  "homepage": "https://github.com/berithpy/any2whatsappvideo#readme",
+  "devDependencies": {
+    "electron": "^3.0.2"
+  },
+  "dependencies": {
+    "cheers-alert": "^1.3.6",
+    "ffmpeg.js": "^3.1.9001",
+    "fluent-ffmpeg": "^2.1.2",
+    "jquery": "^3.3.1"
+  }
+}
