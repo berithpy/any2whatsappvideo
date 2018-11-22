@@ -22,19 +22,25 @@ const push = (f) => {
   const card = createCard()
   holder.appendChild(card)
   let path = f.path.replace(f.name, '')
-  ipcRenderer.send('video-dropped', `${f.name}@@@${path}`)
+  let convertion ={
+    name: f.name,
+    path: path,
+    id: path+f.name
+  }
+  ipcRenderer.send('video-dropped', convertion)
 
-  ipcRenderer.on('encoding-progress', (event, percentage) => {
+  ipcRenderer.on(`encoding-progress-${convertion.id}`, (event, percentage) => {
     encodingPercentage = percentage
     card.innerHTML = `<span class='details'>Currently converting:"<span class='file'>${f.path}</span>"</span> <progress value='${encodingPercentage}' max='100'>${encodingPercentage} %</progress>`
   })
+
   card.addEventListener('click', (event) => {
     event.preventDefault()
     ipcRenderer.send('folder-to-open', f.path)
   })
 
   ipcRenderer.on('encoding-succesful', (event, succ) => {
-    holder.removeChild(card)
+    holder.removeChild(holder.lastChild)
     cheers.success({
       title: 'Success!',
       message: 'Video re-encoded!',

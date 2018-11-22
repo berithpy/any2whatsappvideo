@@ -4,8 +4,8 @@ const path = require('path')
 const ffmpeg = require('fluent-ffmpeg')
 
 const encoder = ffmpeg()
-encoder.setFfmpegPath(path.join(__dirname,'ffmpeg.exe'))
-encoder.setFfprobePath(path.join(__dirname,'ffprobe.exe'))
+encoder.setFfmpegPath(path.join(__dirname, 'ffmpeg.exe'))
+encoder.setFfprobePath(path.join(__dirname, 'ffprobe.exe'))
 
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -62,37 +62,37 @@ app.on('activate', () => {
 
 //ffmpeg -i input.mp4 -c:v libx264 -profile:v baseline -level 3.0 -pix_fmt yuv420p -strict -2 output.mp4
 
-function reencode(filepath, name) {
-  encoder.clone().input(`${filepath}${name}`).outputOptions(
+function reencode(filepath, name, id) {
+  const extension = name.split('.').pop();
+  name = name.replace(extension, '');
+  encoder.clone().input(`${filepath}${name}${extension}`).outputOptions(
     '-c:v', 'libx264',
     '-profile:v', 'baseline',
     '-level', '3.0',
     '-pix_fmt', 'yuv420p',
-    '-strict','-2',
-    '-vf','scale=trunc(iw/2)*2:trunc(ih/2)*2'
+    '-strict', '-2',
+    '-vf', 'scale=trunc(iw/2)*2:trunc(ih/2)*2'
   )
-  .output(`${filepath}fixed_${name}`)
-  .on('start', function() {
-    console.log('re-encoding');
-    //Here we should write a callback to the renderer
-  })
-  .on('end', function() {
-    console.log('done');
-    win.webContents.send('encoding-succesful', 'yay')
-  })
-  .on('progress', function(progress) {
-    win.webContents.send('encoding-progress', progress.percent)
-  })
-  .run();
+    .output(`${filepath}fixed_${name}mp4`)
+    .on('start', function () {
+      console.log('re-encoding');
+      //Here we should write a callback to the renderer
+    })
+    .on('end', function () {
+      win.webContents.send('encoding-succesful', 'yay')
+    })
+    .on('progress', function (progress) {
+      win.webContents.send(`encoding-progress-${id}`, progress.percent)
+    }).on('stderr', function (stderrLine) {
+      // console.log('Stderr output: ' + stderrLine);
+    })
+    .run();
 }
 
 ipcMain.on('video-dropped', (event, arg) => {
-  const values = arg.split('@@@')
-  let name = values[0]
-  let path = values[1]
-  console.log(name, path)
+  console.log(arg.name, arg.path,arg.id)
   try {
-    reencode(path, name)
+    reencode(arg.path, arg.name, arg.id)
   } catch (error) {
     win.webContents.send('main-error', true)
   }
